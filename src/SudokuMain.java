@@ -5,6 +5,7 @@ public class SudokuMain extends Canvas
 {
     public static final int WIDTH = 1920, HEIGHT = WIDTH / 16 * 9;
     public static final int BOARD_SIZE = 9;
+
     public static int[][] expert =
             {{0,6,0,0,0,7,0,0,0},
             {0,1,0,0,0,0,7,0,0},
@@ -15,6 +16,16 @@ public class SudokuMain extends Canvas
             {0,0,0,1,0,3,0,9,0},
             {0,0,0,0,0,0,0,0,6},
             {2,9,0,0,0,0,5,0,0}};
+    public static int[][] evil =
+            {{0,5,0,2,0,0,0,0,0},
+            {0,0,0,0,9,0,0,0,4},
+            {0,1,3,0,0,8,0,9,0},
+            {0,0,0,7,0,0,3,0,0},
+            {0,9,8,0,0,1,0,4,0},
+            {6,0,0,0,0,0,0,0,0},
+            {4,0,0,0,0,6,0,0,0},
+            {0,3,6,2,0,0,0,0,7},
+            {5,0,0,0,0,0,0,3,0}};
     public static int[][] expert2 =
             {{0,0,0,0,0,2,0,0,0},
             {7,0,0,0,0,0,1,0,0},
@@ -65,12 +76,17 @@ public class SudokuMain extends Canvas
                      {0,0,0,1,0,8,0,0,3},
                      {0,0,1,0,4,0,2,6,0},
                      {0,0,3,0,0,0,9,0,8}};
-    private static GameBoard gameBoard = new GameBoard(hard);
+    private static GameBoard gameBoard = new GameBoard(evil);
 
     public SudokuMain(){
         new Window(WIDTH,HEIGHT,"Sudoku.ca",this);
         new Logic(gameBoard);
         System.out.println("end");
+        for(int note = 0; note < BOARD_SIZE; note++){
+            if(gameBoard.board[3][4].notes[note]){
+                System.out.println(note + 1);
+            }
+        }
     }
     public static void main(String[] args) {
         new SudokuMain();

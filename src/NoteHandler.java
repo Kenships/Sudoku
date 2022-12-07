@@ -12,6 +12,15 @@ public class NoteHandler {
         }
         return count;
     }
+    public static boolean notesAreTheSame(GameSquare square1, GameSquare square2){
+        boolean isTheSame = true;
+        for(int note = 0; note < SudokuMain.BOARD_SIZE; note++){
+            if(square1.notes[note] != square2.notes[note]){
+                isTheSame = false;
+            }
+        }
+        return isTheSame;
+    }
     public static void removeConflictingNotes(GameBoard gameBoard, int r, int c, int note){
         removeConflictingNote(gameBoard.getRow(r), note);
         removeConflictingNote(gameBoard.getCol(c), note);

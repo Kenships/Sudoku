@@ -4,7 +4,6 @@ public class Logic {
     private static GameBoard gameBoard;
     private static final int BOARD_SIZE = SudokuMain.BOARD_SIZE;
     public Logic(GameBoard gameBoard){
-
         Logic.gameBoard = gameBoard;
         gameBoard.output();
         solveSudoku();
@@ -16,6 +15,7 @@ public class Logic {
         while(!BoardValidity.isFullyFilledIn(gameBoard) && steps < 69){
             findNakedSingles();
             findAllDominoes();
+            findAllDoubles();
             steps++;
         }
         gameBoard.output();
@@ -27,11 +27,49 @@ public class Logic {
     }
 
     private void findNakedDoubles() {
-        for(int r = 0; r < BOARD_SIZE; r++){
-            for(int c = 0; c < BOARD_SIZE; c++){
-                GameSquare current = gameBoard.board[r][c];
-                if(current.getNumberOfNotes() == 2){
+        for(int rowNumber = 0; rowNumber < BOARD_SIZE; rowNumber++){
+            GameSquare[] row = gameBoard.getRow(rowNumber);
+            findSectionDouble(row);
+        }
+        for(int colNumber = 0; colNumber < BOARD_SIZE; colNumber++){
+            GameSquare[] col = gameBoard.getCol(colNumber);
+            findSectionDouble(col);
+        }
+        for(int boxNumber = 0; boxNumber < BOARD_SIZE; boxNumber++){
+            int[] boxCoordinates = GameBoard.getBoxCoordinates(boxNumber);
+            GameSquare[] box = gameBoard.getBox(boxCoordinates[0],boxCoordinates[1]);
+            findSectionDouble(box);
+        }
+    }
 
+    private void findSectionDouble(GameSquare[] section) {
+        ArrayList<GameSquare> possibleDoubles = new ArrayList<>();
+        for(int i = 0; i < section.length; i++){
+            GameSquare current = section[i];
+            int count = 0;
+            for(int note = 0; note < BOARD_SIZE; note++){
+                if(current.notes[note]){
+                    count++;
+                }
+            }
+            if(count == 2){
+                possibleDoubles.add(current);
+            }
+        }
+        if(possibleDoubles.size() > 1) {
+            for(int i = 0; i < possibleDoubles.size() - 1; i++){
+                for(int j = i + 1; j < possibleDoubles.size(); j++){
+                    GameSquare square1 = possibleDoubles.get(i);
+                    GameSquare square2 = possibleDoubles.get(j);
+                    if(NoteHandler.notesAreTheSame(possibleDoubles.get(i),possibleDoubles.get(j))){
+                        for(int note = 1; note <= BOARD_SIZE; note++){
+                            if(square1.notes[note - 1]){
+                                square1.value = -1;
+                                square2.value = -1;
+                                NoteHandler.removeConflictingNote(section,note);
+                            }
+                        }
+                    }
                 }
             }
         }
