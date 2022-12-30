@@ -13,17 +13,18 @@ public class BoardValidity {
         return valid;
     }
     public static boolean isValidSection(GameSquare[] section) {
+        boolean valid = true;
         HashSet<Integer> values = new HashSet<>();
         for(int i = 0; i < section.length; i++){
-            int currentValue = section[i].value;
+            int currentValue = section[i].getValue();
             if(!values.contains(currentValue) && currentValue != 0){
                 values.add(currentValue);
             }
             else{
-                return false;
+                valid = false;
             }
         }
-        return true;
+        return valid;
     }
     public static boolean isValidSudoku(GameBoard gameBoard){
         boolean isValid = true;

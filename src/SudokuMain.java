@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.util.Arrays;
 
-public class SudokuMain extends Canvas
+public class SudokuMain
 {
     public static final int WIDTH = 1920, HEIGHT = WIDTH / 16 * 9;
     public static final int BOARD_SIZE = 9;
@@ -36,6 +36,16 @@ public class SudokuMain extends Canvas
             {0,5,0,0,0,9,7,0,6},
             {0,2,0,0,7,0,0,0,0},
             {0,0,3,0,0,0,0,9,0}};
+    public static int[][] expert3 =
+            {{0,8,0,0,0,0,0,9,0},
+            {0,7,0,0,6,0,2,1,8},
+            {0,0,6,0,4,8,7,5,0},
+            {8,0,0,0,0,0,5,3,0},
+            {0,2,0,0,0,0,0,0,0},
+            {1,6,3,0,0,0,0,0,0},
+            {0,0,0,4,0,1,9,0,0},
+            {0,0,0,0,0,0,0,7,0},
+            {2,0,9,7,0,0,0,0,5}};
     public static int[][] hard2 =
             {{0,0,0,0,0,0,0,8,0},
                     {7,0,0,0,0,0,0,0,0},
@@ -76,17 +86,13 @@ public class SudokuMain extends Canvas
                      {0,0,0,1,0,8,0,0,3},
                      {0,0,1,0,4,0,2,6,0},
                      {0,0,3,0,0,0,9,0,8}};
-    private static GameBoard gameBoard = new GameBoard(evil);
+    private GameBoard gameBoard = new GameBoard(expert2);
+    private SudokuController sudokuController = new SudokuController();
 
     public SudokuMain(){
-        new Window(WIDTH,HEIGHT,"Sudoku.ca",this);
-        new Logic(gameBoard);
+        new Window(WIDTH,HEIGHT,"Sudoku.ca", sudokuController);
+        new Logic(gameBoard, sudokuController);
         System.out.println("end");
-        for(int note = 0; note < BOARD_SIZE; note++){
-            if(gameBoard.board[3][4].notes[note]){
-                System.out.println(note + 1);
-            }
-        }
     }
     public static void main(String[] args) {
         new SudokuMain();

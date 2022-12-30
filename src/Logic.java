@@ -3,14 +3,17 @@ import java.util.ArrayList;
 public class Logic {
     private static GameBoard gameBoard;
     private static final int BOARD_SIZE = SudokuMain.BOARD_SIZE;
-    public Logic(GameBoard gameBoard){
-        Logic.gameBoard = gameBoard;
+    private SudokuController sudokuController;
+    public Logic(GameBoard gameBoard, SudokuController sudokuController){
+        this.gameBoard = gameBoard;
+        this.sudokuController = sudokuController;
         gameBoard.output();
         solveSudoku();
     }
 
     private void solveSudoku() {
         NoteHandler.addAllNotes(gameBoard);
+        sudokuController.updateAllSquares(gameBoard);
         int steps = 0;
         while(!BoardValidity.isFullyFilledIn(gameBoard) && steps < 69){
             findNakedSingles();
@@ -24,6 +27,11 @@ public class Logic {
     }
     private void findAllDoubles(){
         findNakedDoubles();
+        findHiddenDoubles();
+    }
+
+    private void findHiddenDoubles() {
+
     }
 
     private void findNakedDoubles() {
@@ -46,13 +54,7 @@ public class Logic {
         ArrayList<GameSquare> possibleDoubles = new ArrayList<>();
         for(int i = 0; i < section.length; i++){
             GameSquare current = section[i];
-            int count = 0;
-            for(int note = 0; note < BOARD_SIZE; note++){
-                if(current.notes[note]){
-                    count++;
-                }
-            }
-            if(count == 2){
+            if(current.notes.size() == 2){
                 possibleDoubles.add(current);
             }
         }
@@ -61,11 +63,11 @@ public class Logic {
                 for(int j = i + 1; j < possibleDoubles.size(); j++){
                     GameSquare square1 = possibleDoubles.get(i);
                     GameSquare square2 = possibleDoubles.get(j);
-                    if(NoteHandler.notesAreTheSame(possibleDoubles.get(i),possibleDoubles.get(j))){
+                    if(NoteHandler.notesAreEqual(possibleDoubles.get(i),possibleDoubles.get(j))){
                         for(int note = 1; note <= BOARD_SIZE; note++){
-                            if(square1.notes[note - 1]){
-                                square1.value = -1;
-                                square2.value = -1;
+                            if(square1.containsNote(note)){
+                                square1.addValue(-1);
+                                square2.addValue(-1);
                                 NoteHandler.removeConflictingNote(section,note);
                             }
                         }
@@ -93,38 +95,34 @@ public class Logic {
 
     private void findBoxDomino(GameSquare[] section) {
         for(int note = 1; note <= BOARD_SIZE; note++){
-            int count = 0;
             ArrayList<GameSquare> hasNote = new ArrayList<>();
             for(int i = 0; i < section.length; i++){
-                if(section[i].notes[note - 1]){
+                if(section[i].containsNote(note)){
                     hasNote.add(section[i]);
-                    count++;
-                    section[i].value = -1;
+                    section[i].addValue(-1);
                 }
             }
-            if(count == 2 || count == 3){
+            if(hasNote.size() == 2 || hasNote.size() == 3){
                 if(NoteHandler.notesInSameRow(hasNote))
-                    NoteHandler.removeConflictingNote(gameBoard.getRow(hasNote.get(0).row),note);
+                    NoteHandler.removeConflictingNote(gameBoard.getRow(hasNote.get(0).getRowNumber()),note);
                 else if(NoteHandler.notesInSameCol(hasNote))
-                    NoteHandler.removeConflictingNote(gameBoard.getCol(hasNote.get(0).col),note);
+                    NoteHandler.removeConflictingNote(gameBoard.getCol(hasNote.get(0).getColNumber()),note);
             }
             removeNegativesValues(section);
         }
     }
     private void findLineDomino(GameSquare[] section) {
         for(int note = 1; note <= BOARD_SIZE; note++){
-            int count = 0;
             ArrayList<GameSquare> hasNote = new ArrayList<>();
             for(int i = 0; i < section.length; i++){
-                if(section[i].notes[note - 1]){
-                    section[i].value = -1;
+                if(section[i].containsNote(note)){
+                    section[i].addValue(-1);
                     hasNote.add(section[i]);
-                    count++;
                 }
             }
-            if(count == 2 || count == 3){
+            if(hasNote.size() == 2 || hasNote.size() == 3){
                 if(NoteHandler.notesInSameBox(hasNote)){
-                    NoteHandler.removeConflictingNote(gameBoard.getBox(hasNote.get(0).row,hasNote.get(0).col),note);
+                    NoteHandler.removeConflictingNote(gameBoard.getBox(hasNote.get(0).getRowNumber(),hasNote.get(0).getColNumber()),note);
                 }
             }
             removeNegativesValues(section);
@@ -132,8 +130,8 @@ public class Logic {
     }
     private void removeNegativesValues(GameSquare[] section) {
         for (GameSquare gameSquare : section) {
-            if (gameSquare.value == -1) {
-                gameSquare.value = 0;
+            if (gameSquare.getValue() == -1) {
+                gameSquare.addValue(0);
             }
         }
     }
@@ -148,27 +146,28 @@ public class Logic {
             for(int c = 0; c < BOARD_SIZE; c++){
                 GameSquare current = gameBoard.board[r][c];
                 int count = 0;
-                int note = 0;
-                if(current.value == 0){
-                    for(int i = 0; i < BOARD_SIZE; i++){
-                        if(current.notes[i]){
-                            if(findFixedPosition(gameBoard,r,c,i + 1)){
-                                current.addValue(i + 1);
-                                System.out.println("value added: " + (i + 1));
-                                NoteHandler.removeConflictingNotes(gameBoard,r,c,current.value);
+                int fixedNote = 0;
+                if(current.getValue() == 0){
+                    for(int note = 1; note <= BOARD_SIZE; note++){
+                        if(current.containsNote(note)){
+                            if(findFixedPosition(gameBoard,r,c,note)){
+                                current.setValue(note);
+                                System.out.println("value added: " + (note));
+                                NoteHandler.removeConflictingNotes(gameBoard,r,c,current.getValue());
                                 gameBoard.output();
                                 count = 0;
                                 break;
                             }
                             else{
-                                note = i + 1;
+                                fixedNote = note;
                                 count++;
                             }
                         }
                     }
                     if(count == 1){
-                        current.addValue(note);
-                        NoteHandler.removeConflictingNotes(gameBoard,r,c,note);
+                        current.setValue(fixedNote);
+                        System.out.println("value added: " + (fixedNote));
+                        NoteHandler.removeConflictingNotes(gameBoard,r,c,fixedNote);
                         gameBoard.output();
                     }
                 }

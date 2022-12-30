@@ -13,7 +13,7 @@ public class GameBoard {
         resetBoard();
         for(int r = 0; r < BOARD_SIZE; r++){
             for(int c = 0; c < BOARD_SIZE; c++){
-                this.board[r][c].value = board[r][c];
+                this.board[r][c].addValue(board[r][c]);
             }
         }
     }
@@ -21,14 +21,6 @@ public class GameBoard {
         for(int r = 0; r < BOARD_SIZE; r++){
             for(int c = 0; c < BOARD_SIZE; c++){
                 board[r][c] = new GameSquare(r,c);
-            }
-        }
-    }
-    public static void getSectionValues(GameSquare[] section, HashSet<Integer> possibleNotes) {
-        for(int i = 0; i < BOARD_SIZE; i++){
-            int value = section[i].value;
-            if(value != 0){
-                possibleNotes.remove(value);
             }
         }
     }
@@ -64,22 +56,27 @@ public class GameBoard {
         return thisBox;
     }
     public void output(){
-        System.out.println("---------------------");
         for(int r = 0; r < BOARD_SIZE; r++){
             for(int c = 0; c < BOARD_SIZE; c++){
-                System.out.print(board[r][c].value + " ");
+                System.out.print(board[r][c].getValue()+ " ");
             }
             System.out.println();
         }
+        System.out.println("---------------------");
     }
     public static GameBoard makeDeepCopy(GameBoard gameBoard){
         GameBoard copy = new GameBoard();
+        GameSquare[][] board = gameBoard.board;
+        GameSquare[][] boardCopy = copy.board;
         copy.resetBoard();
         for(int r = 0; r < BOARD_SIZE; r++) {
             for (int c = 0; c < BOARD_SIZE; c++) {
-                copy.board[r][c].value = gameBoard.board[r][c].value;
-                for(int note = 0; note < BOARD_SIZE; note++){
-                    copy.board[r][c].notes[note] = gameBoard.board[r][c].notes[note];
+                GameSquare current = boardCopy[r][c];
+                current.addValue(board[r][c].getValue());
+                current.setRowNumber(r);
+                current.setColNumber(c);
+                for(Integer i : board[r][c].notes){
+                    current.addNote(i);
                 }
             }
         }

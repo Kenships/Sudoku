@@ -1,5 +1,8 @@
+import java.util.Arrays;
+import java.util.HashSet;
+
 public class GameSquare {
-    public boolean[] notes;
+    public HashSet<Integer> notes;
     public int value;
 
     public int row;
@@ -8,35 +11,46 @@ public class GameSquare {
     public GameSquare(int row, int col){
         this.row = row;
         this.col = col;
-        notes = new boolean[SudokuMain.BOARD_SIZE];
+        notes = new HashSet<>(Arrays.asList(1,2,3,4,5,6,7,8,9));
     }
-    public GameSquare(int value){
-        notes = new boolean[SudokuMain.BOARD_SIZE];
+    public GameSquare(int value, int row, int col){
+        this.row = row;
+        this.col = col;
+        notes = new HashSet<>(Arrays.asList(1,2,3,4,5,6,7,8,9));
         this.value = value;
     }
-    public void addNote(int note){
-        notes[note] = true;
-    }
-    public void addValue(int note){
-        removeAllNotes();
+    public void setValue(int note){
+        clearNotes();
         value = note;
     }
+    public boolean containsNote(int note){
+        return notes.contains(note);
+    }
+    public void addNote(int note){
+        notes.add(note);
+    }
     public void removeNote(int note){
-        notes[note] = false;
+        notes.remove(note);
     }
-    public int getNumberOfNotes(){
-        int count = 0;
-        for(int i = 0; i < SudokuMain.BOARD_SIZE; i++){
-            if(notes[i]){
-                count++;
-            }
-        }
-        return count;
+    public void clearNotes(){
+        notes.clear();
     }
-    public void removeAllNotes() {
-        for(int note = 0; note < SudokuMain.BOARD_SIZE; note++){
-            removeNote(note);
-        }
+    public int getRowNumber(){
+        return row;
     }
-
+    public void setRowNumber(int row){
+        this.row = row;
+    }
+    public int getColNumber(){
+        return col;
+    }
+    public void setColNumber(int col){
+        this.col = col;
+    }
+    public int getValue(){
+        return value;
+    }
+    public void addValue(int value){
+        this.value = value;
+    }
 }
