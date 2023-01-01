@@ -64,9 +64,8 @@ public class GameBoard {
         }
         System.out.println("---------------------");
     }
-    public static GameBoard makeDeepCopy(GameBoard gameBoard){
+    public GameBoard makeDeepCopy(){
         GameBoard copy = new GameBoard();
-        GameSquare[][] board = gameBoard.board;
         GameSquare[][] boardCopy = copy.board;
         copy.resetBoard();
         for(int r = 0; r < BOARD_SIZE; r++) {
@@ -75,9 +74,8 @@ public class GameBoard {
                 current.addValue(board[r][c].getValue());
                 current.setRowNumber(r);
                 current.setColNumber(c);
-                for(Integer i : board[r][c].notes){
-                    current.addNote(i);
-                }
+                current.notes.retainAll(board[r][c].notes);
+                System.out.println();
             }
         }
         return copy;

@@ -4,16 +4,18 @@ public class Logic {
     private static GameBoard gameBoard;
     private static final int BOARD_SIZE = SudokuMain.BOARD_SIZE;
     private SudokuController sudokuController;
+    public static GameBoard solvedSudoku;
     public Logic(GameBoard gameBoard, SudokuController sudokuController){
         this.gameBoard = gameBoard;
         this.sudokuController = sudokuController;
         gameBoard.output();
         solveSudoku();
+        solvedSudoku = gameBoard.makeDeepCopy();
     }
 
     private void solveSudoku() {
         NoteHandler.addAllNotes(gameBoard);
-        sudokuController.updateAllSquares(gameBoard);
+        sudokuController.addStep(gameBoard.makeDeepCopy());
         int steps = 0;
         while(!BoardValidity.isFullyFilledIn(gameBoard) && steps < 69){
             findNakedSingles();
@@ -155,6 +157,7 @@ public class Logic {
                                 System.out.println("value added: " + (note));
                                 NoteHandler.removeConflictingNotes(gameBoard,r,c,current.getValue());
                                 gameBoard.output();
+                                sudokuController.addStep(gameBoard.makeDeepCopy());
                                 count = 0;
                                 break;
                             }
@@ -169,6 +172,7 @@ public class Logic {
                         System.out.println("value added: " + (fixedNote));
                         NoteHandler.removeConflictingNotes(gameBoard,r,c,fixedNote);
                         gameBoard.output();
+                        sudokuController.addStep(gameBoard.makeDeepCopy());
                     }
                 }
             }

@@ -91,7 +91,9 @@ public class SudokuMain
 
     public SudokuMain(){
         new Window(WIDTH,HEIGHT,"Sudoku.ca", sudokuController);
+        sudokuController.addStep(gameBoard.makeDeepCopy());
         new Logic(gameBoard, sudokuController);
+        sudokuController.skipToStep(0);
         System.out.println("end");
     }
     public static void main(String[] args) {
