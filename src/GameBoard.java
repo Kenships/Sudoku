@@ -10,10 +10,9 @@ public class GameBoard {
     }
     public GameBoard(int[][] board){
         this.board = new GameSquare[BOARD_SIZE][BOARD_SIZE];
-        resetBoard();
         for(int r = 0; r < BOARD_SIZE; r++){
             for(int c = 0; c < BOARD_SIZE; c++){
-                this.board[r][c].addValue(board[r][c]);
+                this.board[r][c] = new GameSquare(board[r][c],r,c);
             }
         }
     }
@@ -24,6 +23,24 @@ public class GameBoard {
             }
         }
     }
+
+    public boolean equals(GameBoard board1){
+        boolean result = true;
+        for(int row = 0; row < SudokuMain.BOARD_SIZE; row++){
+            for(int col = 0; col < SudokuMain.BOARD_SIZE; col++){
+                if(board1.board[row][col].getValue() != board[row][col].getValue()){
+                    result = false;
+                }// if the values are different return false
+                if(!((board1.board[row][col].notes.isEmpty() && board[row][col].notes.isEmpty()) ||
+                        board[row][col].notes.equals(board1.board[row][col].notes))){
+                    result = false;
+                }// if both board and board 1 are both not empty or board1 does not have all the same notes from board return false
+
+            }
+        }
+        return result;
+    }
+
     public static int getBoxNumber(int r, int c) {
         return r/3 * 3 + 1 + c/3;
     }
@@ -74,8 +91,7 @@ public class GameBoard {
                 current.addValue(board[r][c].getValue());
                 current.setRowNumber(r);
                 current.setColNumber(c);
-                current.notes.retainAll(board[r][c].notes);
-                System.out.println();
+                current.notes.addAll(board[r][c].notes);
             }
         }
         return copy;

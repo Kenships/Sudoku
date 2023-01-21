@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.HashSet;
 import javax.swing.*;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.metal.MetalButtonUI;
@@ -9,11 +10,14 @@ public class SudokuCell extends JPanel {
     private JPanel notesPanel;
     private boolean showNotes;
     private boolean editable;
+
+    private boolean playerPlacedNumber;
     private int row;
     private int col;
     private SudokuController sudokuController;
 
     public SudokuCell(int row, int col, SudokuController sudokuController, Window window) {
+        playerPlacedNumber = false;
         editable = true;
         this.row = row;
         this.col = col;
@@ -26,7 +30,7 @@ public class SudokuCell extends JPanel {
         valueField.setBackground(Color.WHITE);
         valueField.setForeground(Color.BLUE);
         valueField.setBorderPainted(false);
-        valueField.setFont(new Font("Times New Roman", Font.PLAIN, 50));
+        valueField.setFont(new Font("Book Antiqua", Font.PLAIN, 50));
         valueField.setFocusPainted(false);
         valueField.setUI (new MetalButtonUI() {
             protected void paintButtonPressed (Graphics g, AbstractButton b) { }
@@ -40,7 +44,6 @@ public class SudokuCell extends JPanel {
         valueField.addActionListener(e -> {
             sudokuController.setRow(row);
             sudokuController.setCol(col);
-            sudokuController.resetHighlight();
             sudokuController.highlightAll();
         });
         valueField.addKeyListener(new KeyInput(sudokuController, window));
@@ -53,17 +56,16 @@ public class SudokuCell extends JPanel {
             noteFields[i].setBorderPainted(false);
             noteFields[i].setBackground(Color.WHITE);
             noteFields[i].setForeground(new Color(71, 72, 72));
-            noteFields[i].setFont(new Font("Times New Roman",Font.PLAIN, 20));
+            noteFields[i].setFont(new Font(Window.fontName, Font.PLAIN, 20));
             noteFields[i].setFocusPainted(false);
             noteFields[i].setMargin(new Insets(0,0,0,0));
             noteFields[i].setUI (new MetalButtonUI() {
                 protected void paintButtonPressed (Graphics g, AbstractButton b) { }
             });
             noteFields[i].addActionListener(e -> {
-                System.out.println("clicked");
+//                System.out.println("clicked");
                 sudokuController.setRow(row);
                 sudokuController.setCol(col);
-                sudokuController.resetHighlight();
                 sudokuController.highlightAll();
             });
             noteFields[i].addKeyListener(new KeyInput(sudokuController, window));
@@ -79,6 +81,22 @@ public class SudokuCell extends JPanel {
         showNotes = false;
         notesPanel.setVisible(false);
 
+    }
+    public HashSet<Integer> getNotes(){
+        HashSet<Integer> allNotes = new HashSet<>();
+        for(int note = 0; note < SudokuMain.BOARD_SIZE; note++){
+            if(!noteFields[note].getText().equals("")){
+//                System.out.println("added" + (note + 1));
+                allNotes.add(note + 1);
+            }
+        }
+        return allNotes;
+    }
+    public void setPlayerPressed(boolean playerPressed) {
+        playerPlacedNumber = playerPressed;
+    }
+    public boolean getPlayerPressed(){
+        return playerPlacedNumber;
     }
     public void clickNote(){
         noteFields[0].doClick();
@@ -123,7 +141,7 @@ public class SudokuCell extends JPanel {
         valueField.setText(value);
     }
     public void addValue(String value) {
-        if(!editable)
+        if(!editable && !playerPlacedNumber)
             return;
         clearNotes();
         notesPanel.setVisible(false);
@@ -133,8 +151,8 @@ public class SudokuCell extends JPanel {
         }
         else{
             valueField.setText("");
-            sudokuController.highlightAll();
         }
+        sudokuController.highlightAll();
     }
 
     public String getValue() {
@@ -158,11 +176,11 @@ public class SudokuCell extends JPanel {
         }
     }
     public void boldNote(String note){
-        noteFields[Integer.parseInt(note) - 1].setFont(new Font("Times New Roman",Font.BOLD, 20));
+        noteFields[Integer.parseInt(note) - 1].setFont(new Font(Window.fontName, Font.BOLD, 20));
         noteFields[Integer.parseInt(note) - 1].setForeground(Color.BLACK);
     }
     public void unboldNote(String note){
-        noteFields[Integer.parseInt(note) - 1].setFont(new Font("Times New Roman",Font.PLAIN, 20));
+        noteFields[Integer.parseInt(note) - 1].setFont(new Font(Window.fontName, Font.PLAIN, 20));
         noteFields[Integer.parseInt(note) - 1].setForeground(new Color(71, 72, 72));
     }
     public void clearNotes() {
