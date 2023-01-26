@@ -5,6 +5,9 @@ import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.metal.MetalButtonUI;
 
 public class SudokuCell extends JPanel {
+    /** TL;DR
+    Class to store all the information for the front end of the sudoku cell
+     */
     private JButton valueField;
     private JButton[] noteFields;
     private JPanel notesPanel;
@@ -23,8 +26,8 @@ public class SudokuCell extends JPanel {
         this.col = col;
         this.sudokuController = sudokuController;
         setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        setBorder(new BorderUIResource.LineBorderUIResource(Color.BLACK));
+        GridBagConstraints c = new GridBagConstraints(); //dynamic jpanel that allows adding components
+        setBorder(new BorderUIResource.LineBorderUIResource(Color.BLACK)); // nice black border
         valueField = new JButton();
         valueField.setHorizontalAlignment(JTextField.CENTER);
         valueField.setBackground(Color.WHITE);
@@ -34,11 +37,12 @@ public class SudokuCell extends JPanel {
         valueField.setFocusPainted(false);
         valueField.setUI (new MetalButtonUI() {
             protected void paintButtonPressed (Graphics g, AbstractButton b) { }
-        });
+        });//makes it so the button does not have a click animation
         c.gridx = 0;
         c.gridy = 0;
         c.weightx = 1;
         c.weighty = 1;
+        //sets the constraints for the size of the component in relation to others
         c.fill = GridBagConstraints.BOTH;
         add(valueField, c);
         valueField.addActionListener(e -> {
@@ -141,7 +145,7 @@ public class SudokuCell extends JPanel {
         valueField.setText(value);
     }
     public void addValue(String value) {
-        if(!editable && !playerPlacedNumber)
+        if(!editable && !playerPlacedNumber)//if uneditable then you can't change this value
             return;
         clearNotes();
         notesPanel.setVisible(false);
@@ -189,7 +193,7 @@ public class SudokuCell extends JPanel {
         }
     }
     public void setShowNotes() {
-        showNotes ^= true;
+        showNotes ^= true; //flips between true and false;
         valueField.setVisible(!showNotes);
         notesPanel.setVisible(showNotes);
     }

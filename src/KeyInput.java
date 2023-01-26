@@ -4,8 +4,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 public class KeyInput implements KeyListener {
-
-    private HashSet<String> possibleInput = new HashSet<>(Arrays.asList("1","2","3","4","5","6","7","8","9"));
+    /** TL;DR
+     * handles key input
+     */
+    private final HashSet<String> possibleInput = new HashSet<>(Arrays.asList("1","2","3","4","5","6","7","8","9"));
     private SudokuController sudokuController;
     private Window window;
 
@@ -25,7 +27,7 @@ public class KeyInput implements KeyListener {
             if(Window.inputGameBoard[sudokuController.getRow()][sudokuController.getCol()].getValue().equals(""))
                 Window.inputGameBoard[sudokuController.getRow()][sudokuController.getCol()].setPlayerPressed(true);
             sudokuController.addValue(String.valueOf(e.getKeyChar()),Window.noteMode);
-        }
+        }//checks if keyInput is a number
         if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_E){
             Window.inputGameBoard[sudokuController.getRow()][sudokuController.getCol()].setPlayerPressed(false);
             sudokuController.addValue("", false);
@@ -61,7 +63,7 @@ public class KeyInput implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-
+        //nothing here...
     }
 }
 

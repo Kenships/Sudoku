@@ -3,15 +3,10 @@ import java.util.Arrays;
 
 public class SudokuMain
 {
-    /**
-     * todo:
-     * hidden double
-     * different triples
-     * quadruple
-     */
+    //constants
     public static final int WIDTH = 1920, HEIGHT = WIDTH / 16 * 9;
     public static final int BOARD_SIZE = 9;
-
+    //test cases for debugging with varying difficulties
     public static int[][] expert =
             {{0,6,0,0,0,7,0,0,0},
             {0,1,0,0,0,0,7,0,0},
@@ -163,14 +158,18 @@ public class SudokuMain
     private SudokuController sudokuController;
 
     public SudokuMain(){
-        gameBoard = new GameBoard(evil);
+        //create an instance of the SudokuGenerator class and use it to generate an easy sudoku during the first boot up
+        SudokuGenerator sudokuGenerator = new SudokuGenerator();
+//        gameBoard = sudokuGenerator.generateSudoku(SudokuGenerator.EASY, sudokuGenerator.generateSolvedSudoku());
+        gameBoard = new GameBoard(expert4);
         sudokuController = new SudokuController(gameBoard);
+        //creates a window to run the game
         new Window(WIDTH,HEIGHT,"Sudoku.ca", sudokuController);
-//        new Logic(gameBoard, sudokuController);
+        //updates the squares in the gui to match the default generated easy sudoku
         sudokuController.updateAllSquares(gameBoard);
-        System.out.println("end");
     }
     public static void main(String[] args) {
+        //calls the constructor of this class
         new SudokuMain();
     }
 }

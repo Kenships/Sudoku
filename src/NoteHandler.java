@@ -2,17 +2,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class NoteHandler {
+    /** TL;DR
+    handles and makes operations with notes
+     */
     public static int findNumberOfNotes(GameSquare[] section, int note) {
         int count = 0;
         for(int i = 0; i < SudokuMain.BOARD_SIZE; i++){
             if(section[i].containsNote(note)){
                 count++;
             }
-        }
+        }//counts the number of notes in a section
         return count;
     }
     public static boolean notesAreEqual(GameSquare square1, GameSquare square2){
-        return square1.notes.equals(square2.notes);
+        return square1.notes.equals(square2.notes);//check if the notes are equal
     }
     public static boolean removeConflictingNotes(GameBoard gameBoard, int r, int c, int note){
         boolean row = removeConflictingNote(gameBoard.getRow(r), note);

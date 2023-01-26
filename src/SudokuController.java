@@ -1,33 +1,50 @@
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
 public class SudokuController {
+    /** TL;DR
+    communicates between front end and back end
+     */
     private ArrayList<GameBoard> steps = new ArrayList<>();
     public int currentStep = 0;
     private int row;
     private int col;
+    public boolean createMode = false; // used when creating a sudoku
 
     public Logic logic;
 
-    private GameBoard solvedSudoku;
+    public GameBoard solvedSudoku; //stores the current solved sudoku for error detection
 
     public SudokuController(GameBoard gameBoard){
         steps.add(gameBoard.makeDeepCopy());
         logic = new Logic(gameBoard.makeDeepCopy(), this);
         solvedSudoku = logic.masterSolveSudoku(gameBoard.makeDeepCopy());
-    }
-
+    }//constructor
+    public int getNumberOfFilledIn(){
+        int count = 0;
+        for(int r = 0; r < SudokuMain.BOARD_SIZE; r++){
+            for (int c = 0; c < SudokuMain.BOARD_SIZE; c++){
+                if(!Window.inputGameBoard[r][c].getValue().equals("")){
+                    count++;
+                }
+            }
+        }
+        return count;
+    }//counts how many squares have values
     public void clearNotes(){
         Window.inputGameBoard[row][col].clearNotes();
-    }
+    }//used to clear notes in the selected square
     public void clearInputGameBoard(){
         for(int r = 0; r < SudokuMain.BOARD_SIZE; r++){
             for (int c = 0; c < SudokuMain.BOARD_SIZE; c++){
                 Window.inputGameBoard[r][c].setValue("");
+                Window.inputGameBoard[r][c].setValueColor(Color.BLACK);
+                Window.inputGameBoard[r][c].setPlayerPressed(false);
                 Window.inputGameBoard[r][c].setEditable(true);
             }
         }
-    }
+    }//clears the visual game-board
     public GameBoard inputToGameBoard(){
         GameBoard gameBoard = new GameBoard();
         for(int r = 0; r < SudokuMain.BOARD_SIZE; r++){
@@ -39,13 +56,11 @@ public class SudokuController {
                 if(!Window.inputGameBoard[r][c].notesIsEmpty()){
                     gameBoard.board[r][c] = new GameSquare(r,c);
                     gameBoard.board[r][c].notes.addAll(Window.inputGameBoard[r][c].getNotes());
-//                    System.out.println(gameBoard.board[r][c].notes.toString());
                 }
             }
         }
-        //gameBoard.output();
         return gameBoard;
-    }
+    }//takes the values from the GUI game board and passes it into a gameBoard class
     public void toggleEditable(boolean isEditable){
         for(int r = 0; r < SudokuMain.BOARD_SIZE; r++){
             for (int c = 0; c < SudokuMain.BOARD_SIZE; c++){
@@ -54,26 +69,25 @@ public class SudokuController {
                 }
             }
         }
-    }
+    }//changes between editable cells and non-editable
     public void skipToStep(int step){
-        System.out.println(step);
         currentStep++;
         addStep(logic.localSteps.get(step));
         updateAllSquares(logic.localSteps.get(step));
-
-
-    }
+    }//used mainly for debugging and skipping through the "hints"
     public void addStep(GameBoard gameBoard){
         steps.add(gameBoard.makeDeepCopy());
-    }
+    }//adds a gameboard to local steps
     public void nextStep(){
         removeAllErrors();
         highlightAll();
         currentStep++;
-        System.out.println("current step: " + currentStep);
         addStep(logic.getNextStep(inputToGameBoard()));
         updateAllSquares(steps.get(currentStep));
-    }
+        if(BoardValidity.isSolvedSudoku(inputToGameBoard())){
+            youWin();
+        }
+    }//finds the logical next step
 
     private void removeAllErrors() {
         for(int row = 0; row < SudokuMain.BOARD_SIZE; row++){
@@ -84,14 +98,14 @@ public class SudokuController {
                 }
             }
         }
-    }
+    }//remove all cells with the color red
     public GameBoard getCurrentStep(){
         return steps.get(currentStep);
-    }
+    }//gets the game-board at the current step
 
     public void removeStep(int index){
         steps.remove(index);
-    }
+    }//removes the step at the index
     public void clearSteps(){
         steps.clear();
     }
@@ -136,15 +150,26 @@ public class SudokuController {
             }
         }
     }
+    public void lockValues (){
+        for(int r = 0; r < SudokuMain.BOARD_SIZE; r++){
+            for (int c = 0; c < SudokuMain.BOARD_SIZE; c++){
+                if(!Window.inputGameBoard[r][c].getValue().equals("")){
+                    Window.inputGameBoard[r][c].setEditable(false);
+                }
+            }
+
+        }
+    }
     public void highlightError(){
-        if(!correctPosition(row,col))
+        if(!correctPosition(row,col) && !createMode)
             Window.inputGameBoard[row][col].setBgColor(Color.red);
     }// if entered number is not correct it highlights the square red
 
     private boolean correctPosition(int r, int c) {
         return Window.inputGameBoard[r][c].getValue().equals(String.valueOf(solvedSudoku.board[r][c].getValue()))
                 || Window.inputGameBoard[r][c].getValue().equals("");
-    }
+    }//checks if a square in in the correct position
+
 
     public void highlightAll(){
         resetHighlight();
@@ -156,11 +181,11 @@ public class SudokuController {
         }
         Window.inputGameBoard[row][col].setBgColor(new Color(163, 128, 255));
         highlightError();
-    }
+    }//gives highlights to aid the player and point out mistakes
     public void resetHighlight(){
         for(int r = 0; r < SudokuMain.BOARD_SIZE; r++){
             for(int c = 0; c < SudokuMain.BOARD_SIZE; c++){
-                if(correctPosition(r,c))
+                if(correctPosition(r,c) || createMode)
                     Window.inputGameBoard[r][c].resetBgColor();
                 if(!Window.inputGameBoard[r][c].notesIsEmpty()){
                     for(int note = 1; note <= SudokuMain.BOARD_SIZE; note++){
@@ -169,12 +194,12 @@ public class SudokuController {
                 }
             }
         }
-    }
+    }//resets the board to its original highlights; no highlight
     private void highlightValue() {
         String currentValue = getCurrentValue();
         for(int r = 0; r < SudokuMain.BOARD_SIZE; r++){
             for(int c = 0; c < SudokuMain.BOARD_SIZE; c++){
-                if(Window.inputGameBoard[r][c].getValue().equals(currentValue) && correctPosition(r,c)){
+                if(Window.inputGameBoard[r][c].getValue().equals(currentValue) && (correctPosition(r,c) || createMode)){
                     Window.inputGameBoard[r][c].setBgColor(new Color(187, 162, 255));
                 }
                 if(!Window.inputGameBoard[r][c].notesIsEmpty()){
@@ -182,39 +207,43 @@ public class SudokuController {
                 }
             }
         }
-    }
+    }//highlights all the same value selected
 
     private void highlightBox() {
         int x = row/3 * 3;
         int y = col/3 * 3;
         for(int r = x; r < x + 3; r++){
             for(int c = y; c < y + 3; c++){
-                if(correctPosition(r,c))
+                if(correctPosition(r,c) || createMode)
                     Window.inputGameBoard[r][c].setBgColor(new Color(219, 205, 255));
             }
         }
-    }
+    }//highlights the box of selected
 
     private void highlightCol() {
         for(int r = 0; r < SudokuMain.BOARD_SIZE; r++){
-            if(correctPosition(r,col))
+            if(correctPosition(r,col) || createMode)
                 Window.inputGameBoard[r][col].setBgColor(new Color(219, 205, 255));
         }
-    }
+    }//highlights the col selected
 
     private void highlightRow() {
         for(int c = 0; c < SudokuMain.BOARD_SIZE; c++){
-            if(correctPosition(row,c))
+            if(correctPosition(row,c) || createMode)
                 Window.inputGameBoard[row][c].setBgColor(new Color(219, 205, 255));
         }
-    }
+    }//highlights the row selected
 
     public void setValue(String value){
         Window.inputGameBoard[row][col].setValue(value);
-
-    }
+    }//sets the value in the input board
     public void addValue(String value, boolean noteMode){
-        if(Window.inputGameBoard[row][col].getPlayerPressed())
+        if(createMode){//during creating mode the value will be set and notes will not be allowed
+            Window.inputGameBoard[row][col].setValue(value);
+            highlightAll();
+            return;
+        }
+        if(Window.inputGameBoard[row][col].getPlayerPressed())//if its placed by a player change the font to blue
             Window.inputGameBoard[row][col].setValueColor(Color.BLUE);
         if(!noteMode){
             Window.inputGameBoard[row][col].addValue(value);
@@ -223,32 +252,49 @@ public class SudokuController {
             if(!value.equals("")){
                 NoteHandler.removeConflictingNotes(currentBoard,getRow(),getCol(),Integer.parseInt(value));
                 updateAllNotes(currentBoard);
-            }
+            }//if the inputted value is not 0/empty string then remove all the conflicting notes
             addStep(currentBoard);
         }
-        else{
+        else{//if it is note mode then just set the note
             Window.inputGameBoard[row][col].setNote(value);
             addStep(inputToGameBoard());
         }
         currentStep++;
+        if(BoardValidity.isSolvedSudoku(inputToGameBoard())){
+            youWin();
+        }//check for complete board
     }
+    public void youWin(){
+        JFrame win = new JFrame();
+        win.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        win.setPreferredSize(new Dimension(600, 200));
+        win.setMaximumSize(new Dimension(600,200));
+        win.setMinimumSize(new Dimension(600,200));
+        win.requestFocus();
+        win.setLocationRelativeTo(null);
+        JLabel label = new JLabel("YOU WIN!");
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setFont(new Font(Window.fontName, Font.BOLD, 60));
+        win.add(label);
+        win.setVisible(true);
+    }//creates a win screen
     public String getCurrentValue(){
         return Window.inputGameBoard[row][col].getValue();
-    }
+    }//gets the current value of selected square
 
     public void setRow(int row) {
         this.row = row;
-    }
+    }//sets the row number of selected
 
     public int getRow() {
         return row;
-    }
+    }//gets the row number of selected
 
     public void setCol(int col) {
         this.col = col;
-    }
+    }//sets the column number of selected
 
     public int getCol() {
         return col;
-    }
+    }//gets the column number of selected
 }
