@@ -67,7 +67,6 @@ public class SudokuCell extends JPanel {
                 protected void paintButtonPressed (Graphics g, AbstractButton b) { }
             });
             noteFields[i].addActionListener(e -> {
-//                System.out.println("clicked");
                 sudokuController.setRow(row);
                 sudokuController.setCol(col);
                 sudokuController.highlightAll();
@@ -90,7 +89,6 @@ public class SudokuCell extends JPanel {
         HashSet<Integer> allNotes = new HashSet<>();
         for(int note = 0; note < SudokuMain.BOARD_SIZE; note++){
             if(!noteFields[note].getText().equals("")){
-//                System.out.println("added" + (note + 1));
                 allNotes.add(note + 1);
             }
         }
@@ -116,6 +114,9 @@ public class SudokuCell extends JPanel {
     }
     public Color getBgColor(){
         return valueField.getBackground();
+    }
+    public void setNoteColor(int note, Color color){
+        noteFields[note - 1].setBackground(color);
     }
     public void setBgColor(Color color){
         valueField.setBackground(color);

@@ -91,7 +91,6 @@ public class SudokuGenerator {
 
         //used to check if a technique has been used at least once
         while(!possible){
-            System.out.println("attempted");
             possibleBoard = solvedSudoku.makeDeepCopy();
             removeSquares(random.nextInt(4) + 51, possibleBoard);
             GameBoard solve = possibleBoard.makeDeepCopy();

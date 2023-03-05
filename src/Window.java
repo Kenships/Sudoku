@@ -86,8 +86,6 @@ public class Window extends JFrame{
             sudokuController.clearSteps();
             sudokuController.clearInputGameBoard();
             sudokuController.currentStep = -1;
-            sudokuController.updateAllSquares(new GameBoard());
-            sudokuController.solvedSudoku = new GameBoard();
             sudokuController.createMode = true;
             sudokuController.highlightAll();
             confirm.setVisible(true);
@@ -109,9 +107,13 @@ public class Window extends JFrame{
                 return;
             }
             GameBoard solved = sudokuController.logic.masterSolveSudoku(sudokuController.inputToGameBoard());
+            GameBoard beforeGuess = NoteHandler.addAllNotes(sudokuController.inputToGameBoard());
             if(BoardValidity.isSolvedSudoku(solved)){
-                sudokuController.solvedSudoku = solved;
+                sudokuController.createMode = false;
+                sudokuController.solvedSudoku = solved.makeDeepCopy();
+                sudokuController.logic.beforeGuess = sudokuController.logic.solveSudoku(beforeGuess);
                 sudokuController.lockValues();
+                sudokuController.updateAllValues(sudokuController.inputToGameBoard());
             }
             else{
                 confirm.setText("impossible try again");
@@ -249,7 +251,7 @@ public class Window extends JFrame{
         clearBoard.setBounds(stepControl.getX() + stepControl.getWidth() + 20, stepControl.getY(), stepControl.getWidth()/2, stepControl.getHeight());
         this.repaint();
         this.revalidate();
-    }
+    }//resizes
     public void createNewBoard(int difficulty, SudokuController sudokuController){
         sudokuController.createMode = false;
         sudokuController.clearSteps();
@@ -257,6 +259,7 @@ public class Window extends JFrame{
         sudokuController.currentStep = -1;
         SudokuGenerator sudokuGenerator = new SudokuGenerator();
         sudokuController.solvedSudoku = sudokuGenerator.generateSolvedSudoku();
+        sudokuController.logic.beforeGuess = sudokuController.solvedSudoku.makeDeepCopy();
         sudokuController.updateAllSquares(sudokuGenerator.generateSudoku(difficulty, sudokuController.solvedSudoku));
         sudokuController.highlightAll();
         confirm.setVisible(false);

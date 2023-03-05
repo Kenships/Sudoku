@@ -12,7 +12,7 @@ public class Logic {
     public ArrayList<GameBoard> localSteps;
     private ArrayList<GameBoard> history;//stores history for guess
     private boolean guessing;
-    private GameBoard beforeGuess;
+    public GameBoard beforeGuess;
     public Logic(GameBoard gameBoard, SudokuController sudokuController){
         this.sudokuController = sudokuController;
         localSteps = new ArrayList<>();
@@ -32,17 +32,18 @@ public class Logic {
             return gameBoard;
         }
         //checks if the input gameBoard is equal to the solved version of the board before guessing
-        boolean temp = gameBoard.equals(solveSudoku(beforeGuess)) && !BoardValidity.valuesAreFilled(gameBoard);
-        System.out.println(temp);
-        if (temp) {
+        GameBoard attempt = solveSudoku(gameBoard.makeDeepCopy());
+        if(!attempt.equals(beforeGuess))
+            return NoteHandler.addAllNotes(gameBoard);
+        if (gameBoard.equals(solveSudoku(beforeGuess)) && !BoardValidity.valuesAreFilled(gameBoard)) {
             history.clear();
             guess(gameBoard);
             beforeGuess = solveSudoku(gameBoard.makeDeepCopy());
         }
         else{
-            findNakedSingles(gameBoard);
-            findAllDominoes(gameBoard);
-            findAllDoubles(gameBoard);
+            findNakedSingles(gameBoard.makeDeepCopy());
+            findAllDominoes(gameBoard.makeDeepCopy());
+            findAllDoubles(gameBoard.makeDeepCopy());
         }
         if(localSteps.isEmpty()){
             localSteps.add(NoteHandler.addAllNotes(gameBoard.makeDeepCopy()));
@@ -114,8 +115,10 @@ public class Logic {
 
         while(!tree.isEmpty() && possibleValues.size() <= 1){//when the tree is empty or there is more than one answer then the loop will break
             GameBoard current = solveSudoku(tree.pop());
-
-            if(!BoardValidity.valuesAreFilled(current) && !BoardValidity.notesAreFilled(current)){//if the notes are fully filled in and there are empty spaces
+            if(!BoardValidity.notesAreFilled(current)){
+                //do nothing
+            }
+            else if(!BoardValidity.valuesAreFilled(current)){//if the notes are fully filled in and there are empty spaces
                 min = 10;
                 for(int r = 0; r < SudokuMain.BOARD_SIZE; r++){
                     for(int c = 0; c < SudokuMain.BOARD_SIZE; c++){
@@ -148,7 +151,6 @@ public class Logic {
         else{// otherwise take the value from the possible values and put it in the original board and return that this sudoku is indeed solveable
             gameBoard.board[initRow][initCol].setValue(possibleValues.get(0).board[initRow][initCol].getValue());
             NoteHandler.removeConflictingNotes(gameBoard, initRow, initCol, possibleValues.get(0).board[initRow][initCol].getValue());
-            System.out.println("Guessed");
             localSteps.add(gameBoard);
         }
         return true;
@@ -186,7 +188,7 @@ public class Logic {
             //gets every combination of the possible doubles
             for(int i = 0; i < possibleDoubles.size() - 1; i++){
                 for(int j = i + 1; j < possibleDoubles.size(); j++){
-                    boolean changeOccured = false;
+                    boolean changeOccurred = false;
                     GameSquare square1 = possibleDoubles.get(i);
                     GameSquare square2 = possibleDoubles.get(j);
                     if(NoteHandler.notesAreEqual(possibleDoubles.get(i),possibleDoubles.get(j))){
@@ -195,10 +197,10 @@ public class Logic {
                             square1.addValue(-1);
                             square2.addValue(-1);
                             if(NoteHandler.removeConflictingNote(section,note) && !guessing){
-                                changeOccured = true;
+                                changeOccurred = true;
                             }
                         }
-                        if(changeOccured)
+                        if(changeOccurred)
                             localSteps.add(gameBoard.makeDeepCopy());
                     }
                 }
@@ -279,12 +281,17 @@ public class Logic {
         for(int r = 0; r < BOARD_SIZE; r++){
             for(int c = 0; c < BOARD_SIZE; c++){
                 GameSquare current = gameBoard.board[r][c];
-                int fixedNote = 0;
-                if(current.getValue() == 0){
+                if(current.notes.size() == 1){//if there is only one
+                    int fixedNote = current.notes.iterator().next();
+                    current.setValue(fixedNote);
+                    changeDescription = 1;
+                    NoteHandler.removeConflictingNotes(gameBoard,r,c,fixedNote);
+                    if(!guessing) localSteps.add(gameBoard.makeDeepCopy());
+                }
+                else if(current.getValue() == 0){
                     for(int note : current.notes){//loops through all possible notes
                         if(findFixedPosition(gameBoard,r,c,note)){
                             current.setValue(note);
-//                               System.out.println("value added: " + (note));
                             NoteHandler.removeConflictingNotes(gameBoard,r,c,current.getValue());
                             if(!guessing){
                                 localSteps.add(gameBoard.makeDeepCopy());
@@ -293,13 +300,6 @@ public class Logic {
                             //to show that this is a fixed value;
                             break;
                         }
-                        fixedNote = note;
-                    }
-                    if(current.notes.size() == 1){//if there is only one
-                        current.setValue(fixedNote);
-                        changeDescription = 1;
-                        NoteHandler.removeConflictingNotes(gameBoard,r,c,fixedNote);
-                        if(!guessing) localSteps.add(gameBoard.makeDeepCopy());
                     }
                 }
             }
