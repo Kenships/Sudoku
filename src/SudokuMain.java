@@ -1,8 +1,14 @@
+/** Sudoku Game
+ * Desc: a casual game of sudoku
+ * @author Kenneth Xu
+ * @version Jan 2023
+ */
 import java.awt.*;
 import java.util.Arrays;
 
 public class SudokuMain
 {
+
     //constants
     public static final int WIDTH = 1920, HEIGHT = WIDTH / 16 * 9;
     public static final int BOARD_SIZE = 9;
@@ -160,8 +166,7 @@ public class SudokuMain
     public SudokuMain(){
         //create an instance of the SudokuGenerator class and use it to generate an easy sudoku during the first boot up
         SudokuGenerator sudokuGenerator = new SudokuGenerator();
-//        gameBoard = sudokuGenerator.generateSudoku(SudokuGenerator.EASY, sudokuGenerator.generateSolvedSudoku());
-        gameBoard = new GameBoard(expert4);
+        gameBoard = sudokuGenerator.generateSudoku(SudokuGenerator.EASY, sudokuGenerator.generateSolvedSudoku());
         sudokuController = new SudokuController(gameBoard);
         //creates a window to run the game
         new Window(WIDTH,HEIGHT,"Sudoku.ca", sudokuController);

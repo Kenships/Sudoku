@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class SudokuController {
     /** TL;DR
@@ -80,14 +81,32 @@ public class SudokuController {
     }//adds a gameboard to local steps
     public void nextStep(){
         removeAllErrors();
-        highlightAll();
         currentStep++;
         addStep(logic.getNextStep(inputToGameBoard()));
         updateAllSquares(steps.get(currentStep));
+        highlightChange();
+        highlightAll();
+
         if(BoardValidity.isSolvedSudoku(inputToGameBoard())){
             youWin();
         }
     }//finds the logical next step
+
+    private void highlightChange() {
+        if(currentStep < 1)
+            return;
+        GameBoard previous = steps.get(currentStep - 1);
+        GameBoard current = getCurrentStep();
+        for(int row = 0; row < SudokuMain.BOARD_SIZE; row++){
+            for(int col = 0; col < SudokuMain.BOARD_SIZE; col++){
+                if(current.board[row][col].getValue() != previous.board[row][col].getValue()){
+                    setRow(row);
+                    setCol(col);
+                    highlightAll();
+                }
+            }
+        }
+    }
 
     private void removeAllErrors() {
         for(int row = 0; row < SudokuMain.BOARD_SIZE; row++){
@@ -155,6 +174,7 @@ public class SudokuController {
             for (int c = 0; c < SudokuMain.BOARD_SIZE; c++){
                 if(!Window.inputGameBoard[r][c].getValue().equals("")){
                     Window.inputGameBoard[r][c].setEditable(false);
+                    Window.inputGameBoard[r][c].setPlayerPressed(false);
                 }
             }
 
@@ -190,6 +210,7 @@ public class SudokuController {
                 if(!Window.inputGameBoard[r][c].notesIsEmpty()){
                     for(int note = 1; note <= SudokuMain.BOARD_SIZE; note++){
                         Window.inputGameBoard[r][c].unboldNote(String.valueOf(note));
+                        Window.inputGameBoard[r][c].setNoteColor(note,Color.WHITE);
                     }
                 }
             }
